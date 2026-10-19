@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aplikasi Hafalan Siswa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #ffffff;
+    color: #111827;
+    min-height: 100vh;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 1.1rem; color: #000;
+    letter-spacing: -0.2px;
+  }
+  .brand .logo {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 800; font-size: 1.05rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,.15);
+  }
+  .topbar-actions { display: flex; gap: 8px; }
+
+  /* ===== BUTTONS ===== */
+  .btn {
+    padding: 10px 18px;
+    border: 1.5px solid #000;
+    border-radius: 10px;
+    font-weight: 600; font-size: 0.87rem;
+    cursor: pointer; font-family: inherit;
+    transition: all .18s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    white-space: nowrap;
+    background: #000; color: #fff;
+  }
+  .btn:hover {
+    background: #1f2937;
+    border-color: #1f2937;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  }
+  .btn:active { transform: translateY(0); }
+  .btn-primary { background: #000; color: #fff; border-color: #000; }
+  .btn-success { background: #000; color: #fff; border-color: #000; }
+  .btn-danger  { background: #000; color: #fff; border-color: #000; }
+  .btn-danger:hover  { background: #dc2626; border-color: #dc2626; }
+  .btn-warning { background: #000; color: #fff; border-color: #000; }
+  .btn-warning:hover { background: #d97706; border-color: #d97706; }
+  .btn-secondary { background: #fff; color: #000; border-color: #000; }
+  .btn-secondary:hover { background: #000; color: #fff; border-color: #000; }
+  .btn-outline { background: #fff; color: #000; border-color: #000; }
+  .btn-outline:hover { background: #000; color: #fff; border-color: #000; }
+  .btn-sm { padding: 7px 14px; font-size: 0.78rem; border-radius: 8px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .btn svg { flex-shrink: 0; }
+
+  /* ===== CONTAINER ===== */
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 28px; }
+  .page-title {
+    font-size: 1.65rem; font-weight: 800; color: #000;
+    margin-bottom: 8px; letter-spacing: -0.4px; text-align: center;
+  }
+  .page-subtitle {
+    color: #6b7280; margin-bottom: 28px; font-size: 0.92rem;
+    text-align: center;
+  }
+
+  /* ===== SECTION ===== */
+  .section {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  .section-title {
+    font-size: 1rem; font-weight: 700; color: #000;
+    margin-bottom: 18px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; flex-wrap: wrap; text-align: center;
+  }
+
+  /* ===== DASHBOARD CARDS ===== */
+  .kelas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 16px;
+  }
+  .kelas-card {
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px 18px;
+    cursor: pointer;
+    transition: all .2s ease;
+    position: relative;
+    text-align: center;
+  }
+  .kelas-card:hover {
+    border-color: #000;
+    box-shadow: 0 12px 30px rgba(0,0,0,.1);
+    transform: translateY(-3px);
+  }
+  .kelas-card .kelas-name {
+    font-size: 1.3rem; font-weight: 800; color: #000;
+    margin: 6px 0 4px; letter-spacing: -0.3px;
+  }
+  .kelas-card .kelas-count {
+    font-size: 0.82rem; color: #6b7280;
+  }
+  .kelas-card .kelas-badge {
+    display: inline-block;
+    background: #f3f4f6; color: #111827;
+    font-size: 0.74rem; font-weight: 700;
+    padding: 4px 12px; border-radius: 20px;
+    margin-bottom: 6px;
+    border: 1px solid #e5e7eb;
+  }
+  .kelas-card.new { animation: popIn .3s ease; }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* ===== TABLE ===== */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+  thead { background: #f9fafb; }
+  th {
+    padding: 13px 12px;
+    text-align: center;
+    font-weight: 700; color: #374151;
+    font-size: 0.73rem; text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
+    white-space: nowrap;
+  }
+  td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    text-align: center;
+  }
+  tr:hover { background: #fafafa; }
+
+  /* ===== BADGES ===== */
+  .badge {
+    display: inline-block; padding: 4px 10px;
+    border-radius: 8px; background: #f3f4f6; color: #111827;
+    font-weight: 600; font-size: 0.76rem;
+    border: 1px solid #e5e7eb;
+    margin: 2px;
+  }
+  .nilai {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-weight: 700; font-size: 0.75rem;
+  }
+  .nilai-tinggi { background: #d1fae5; color: #065f46; }
+  .nilai-sedang { background: #fef3c7; color: #92400e; }
+  .nilai-rendah { background: #fee2e2; color: #991b1b; }
+
+  .empty { text-align: center; padding: 40px 20px; color: #9ca3af; font-size: 0.9rem; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15,23,42,.55);
+    z-index: 100; display: none; align-items: center; justify-content: center;
+    padding: 16px; overflow-y: auto;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff; border-radius: 18px; width: 100%;
+    max-width: 700px; padding: 28px; max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 24px 70px rgba(0,0,0,.25);
+    animation: modalIn .22s ease;
+    border: 1px solid #e5e7eb;
+    text-align: center;
+  }
+  .modal-lg { max-width: 900px; }
+  .modal-sm { max-width: 460px; }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(.96) translateY(12px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-header {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 22px; gap: 12px;
+    position: relative;
+    min-height: 34px;
+  }
+  .modal-title {
+    font-size: 1.15rem; font-weight: 800; color: #000;
+    text-align: center; padding: 0 44px;
+    letter-spacing: -0.2px;
+  }
+  .modal-close {
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    background: #f3f4f6; border: none;
+    width: 34px; height: 34px;
+    border-radius: 9px; cursor: pointer;
+    font-size: 1.15rem; color: #374151; font-weight: 700; line-height: 1;
+    transition: all .15s;
+  }
+  .modal-close:hover { background: #e5e7eb; color: #000; }
+  .modal-footer {
+    display: flex; justify-content: center; gap: 10px;
+    margin-top: 22px; padding-top: 18px; border-top: 1px solid #e5e7eb;
+  }
+
+  /* ===== FIELDS ===== */
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 0.82rem; font-weight: 700;
+    color: #374151; margin-bottom: 8px; text-align: center;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 11px 14px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 0.9rem; font-family: inherit; outline: none;
+    transition: all .15s; background: #fff; resize: vertical;
+    text-align: center; color: #111827;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+  }
+  .field-hint {
+    font-size: 0.78rem; color: #6b7280;
+    margin-top: 6px; text-align: center; line-height: 1.5;
+  }
+
+  /* ===== SURAT LIST ===== */
+  .surat-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px; max-height: 420px; overflow-y: auto;
+    border: 1px solid #e5e7eb; border-radius: 12px;
+    background: #fafafa; padding: 10px;
+  }
+  .surat-item {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff; padding: 9px 12px; border-radius: 9px;
+    border: 1.5px solid #e5e7eb; transition: all .15s;
+  }
+  .surat-item.active { border-color: #000; background: #f9fafb; }
+  .surat-item input[type="checkbox"] {
+    width: 18px; height: 18px; cursor: pointer;
+    accent-color: #000; flex-shrink: 0;
+  }
+  .surat-item .surat-name {
+    flex: 1; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; color: #374151; text-align: center;
+  }
+  .surat-item input[type="number"] {
+    width: 68px; padding: 5px 8px;
+    border: 1px solid #e5e7eb; border-radius: 7px;
+    font-size: 0.83rem; text-align: center; outline: none;
+    font-family: inherit;
+  }
+  .surat-item input[type="number"]:focus { border-color: #000; }
+  .surat-item input[type="number"]:disabled { background: #f3f4f6; color: #9ca3af; }
+
+  /* ===== TOOLBAR / SEARCH ===== */
+  .toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 16px; justify-content: center;
+  }
+  .search-input {
+    padding: 11px 16px;
+    border: 1.5px solid #e5e7eb; border-radius: 10px;
+    font-size: 0.88rem; font-family: inherit; outline: none;
+    min-width: 240px; background: #fff;
+    transition: all .15s;
+    text-align: center; color: #111827;
+  }
+  .search-input::placeholder { color: #9ca3af; }
+  .search-input:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; top: 24px; left: 50%;
+    padding: 14px 22px; border-radius: 12px;
+    color: white; font-weight: 600; z-index: 1000;
+    transform: translate(-50%, -120px);
+    transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity .3s;
+    box-shadow: 0 14px 34px rgba(0,0,0,.2);
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0;
+  }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+  .toast.success { background: #000; }
+  .toast.error   { background: #dc2626; }
+  .toast.info    { background: #374151; }
+  .toast .toast-icon {
+    font-size: 0.9rem; background: rgba(255,255,255,.25);
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; flex-shrink: 0;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ===== TABS ===== */
+  .tabs-row {
+    display: flex; gap: 4px; margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    justify-content: center;
+  }
+  .tab-btn {
+    padding: 11px 18px; border: none; background: none;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    font-size: 0.87rem; transition: all .15s;
+    border-bottom: 2px solid transparent;
+    color: #6b7280;
+  }
+  .tab-btn:hover { color: #000; }
+  .tab-btn.active { color: #000; border-bottom-color: #000; }
+
+  /* ===== CLASS DETAIL HEADER ===== */
+  /* Kembali rata kiri (bukan center) */
+  .btn-back-row {
+    text-align: left;
+    margin-bottom: 16px;
+    padding-left: 2px;
+  }
+  .btn-back {
+    background: #fff; border: 1.5px solid #e5e7eb; color: #374151;
+    padding: 9px 16px; border-radius: 10px;
+    font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    transition: all .15s; font-family: inherit;
+  }
+  .btn-back:hover {
+    border-color: #000; color: #000;
+    background: #f9fafb;
+  }
+
+  .kelas-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #000;
+    border-radius: 18px;
+    padding: 32px 26px;
+    margin-bottom: 20px;
+    color: #fff;
+    box-shadow: 0 14px 40px rgba(0,0,0,.18);
+    text-align: center;
+  }
+  .kelas-icon {
+    width: 76px; height: 76px; border-radius: 20px;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1.3rem; color: #fff;
+    padding: 0 8px; text-align: center; line-height: 1.05;
+    word-break: break-word; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .kelas-header .page-title {
+    color: #fff; margin-bottom: 4px; text-align: center;
+  }
+  .kelas-meta {
+    color: rgba(255,255,255,.85);
+    font-size: 0.88rem; font-weight: 500;
+    text-align: center;
+  }
+
+  /* ===== ACTION BAR ===== */
+  .action-bar {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    background: #fff; padding: 16px;
+    border-radius: 14px; margin-bottom: 22px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state { text-align: center; padding: 60px 20px !important; }
+  .empty-icon { font-size: 3rem; margin-bottom: 14px; opacity: .5; }
+  .empty-title {
+    font-size: 1.1rem; font-weight: 800;
+    color: #111827; margin-bottom: 8px;
+  }
+  .empty-desc { color: #9ca3af; font-size: 0.88rem; margin-bottom: 20px; }
+  .empty-actions {
+    display: flex; gap: 10px;
+    justify-content: center; flex-wrap: wrap;
+  }
+
+  /* ===== INFO BOX ===== */
+  .info-box {
+    padding: 14px 16px; border-radius: 12px;
+    font-size: 0.86rem; line-height: 1.6;
+    margin-bottom: 14px;
+    border: 1px solid;
+    text-align: center;
+  }
+  .info-box.blue  { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+  .info-box.green { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+  .info-box.red   { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  .info-box.amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .container { padding: 20px 16px; }
+    .topbar { padding: 12px 16px; }
+    .page-title { font-size: 1.35rem; }
+    .kelas-header { padding: 24px 18px; }
+    .kelas-icon { width: 64px; height: 64px; font-size: 1.1rem; }
+    .action-bar .btn { flex: 1 1 auto; }
+    .search-input { min-width: 0; width: 100%; }
+    .modal { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TOPBAR ===== -->
+<div class="topbar">
+  <div class="brand">
+    <div class="logo">H</div>
+    <span>Hafalan Siswa</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn btn-secondary btn-sm" onclick="openSettings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      Pengaturan
+    </button>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="container" id="page-dashboard">
+  <h1 class="page-title">Dashboard Kelas</h1>
+  <p class="page-subtitle">Klik pada kelas untuk melihat dan mengelola data hafalan siswa.</p>
+  <div id="kelasGrid" class="kelas-grid">
+    <div class="empty">Memuat data kelas...</div>
+  </div>
+</div>
+
+<!-- ===== KELAS DETAIL ===== -->
+<div class="container hidden" id="page-kelas">
+  <div class="btn-back-row">
+    <button class="btn-back" onclick="backToDashboard()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Kembali
+    </button>
+  </div>
+
+  <div class="kelas-header">
+    <div class="kelas-icon" id="kelasIcon">8C</div>
+    <h1 class="page-title" id="kelasDetailTitle">Kelas</h1>
+    <p class="kelas-meta" id="kelasDetailMeta">0 siswa</p>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="openTambahSiswa()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Tambah Siswa
+    </button>
+    <button class="btn btn-secondary" onclick="openImportKelas()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+      Import Excel
+    </button>
+    <button class="btn btn-success" onclick="exportKelasExcel()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      Export Excel
+    </button>
+    <button class="btn btn-outline" onclick="downloadPDFKelas()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      PDF
+    </button>
+    <button class="btn btn-outline" onclick="downloadPNGKelas()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      Gambar
+    </button>
+  </div>
+
+  <div class="section">
+    <div class="toolbar">
+      <input type="text" class="search-input" id="searchSiswa" placeholder=" Cari nama siswa..." oninput="renderSiswaKelas()" />
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px;">No</th>
+            <th>Nama Siswa</th>
+            <th>Hafalan (Surat & Nilai)</th>
+            <th style="width:90px;">Rata-rata</th>
+            <th style="width:140px;">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tbodySiswa"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SETTINGS ===== -->
+<div class="modal-overlay" id="modalSettings">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">Pengaturan</div>
+      <button class="modal-close" onclick="closeModal('modalSettings')">&times;</button>
+    </div>
+    <div class="tabs-row">
+      <button class="tab-btn active" data-tab="kelas" onclick="switchTab('kelas')">Kelola Kelas</button>
+      <button class="tab-btn" data-tab="siswa" onclick="switchTab('siswa')">Tambah Siswa</button>
+      <button class="tab-btn" data-tab="importexport" onclick="switchTab('importexport')">Import / Export Global</button>
+    </div>
+
+    <!-- Tab: Kelola Kelas -->
+    <div class="tab-panel" id="tab-kelas">
+      <div class="field">
+        <label>Tambah Kelas (bisa banyak, satu per baris)</label>
+        <textarea id="inputKelasBanyak" rows="3" placeholder="Contoh:&#10;8C&#10;9E&#10;7A"></textarea>
+        <div class="field-hint">Pisahkan dengan enter atau koma. Kelas yang sudah ada akan dilewati.</div>
+      </div>
+      <button class="btn btn-primary" onclick="tambahKelasBanyak()">Tambah Kelas</button>
+
+      <div style="margin-top:26px;">
+        <div class="section-title" style="margin-bottom:12px;font-size:0.92rem;">Daftar Kelas</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50px;">No</th>
+                <th>Nama Kelas</th>
+                <th style="width:120px;">Jumlah Siswa</th>
+                <th style="width:140px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyKelasSetting">
+              <tr><td colspan="4" class="empty">Belum ada kelas</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Tambah Siswa -->
+    <div class="tab-panel hidden" id="tab-siswa">
+      <div class="field">
+        <label>Kelas</label>
+        <select id="settingSiswaKelas"></select>
+        <div class="field-hint" id="settingSiswaKelasHint">Pilih kelas tujuan.</div>
+      </div>
+      <div class="field">
+        <label>Nama Siswa</label>
+        <input type="text" id="settingSiswaNama" placeholder="Nama lengkap siswa" />
+      </div>
+      <button class="btn btn-primary" onclick="tambahSiswaFromSetting()">Tambah Siswa</button>
+      <div class="field-hint" style="margin-top:12px;">
+        Setelah ditambahkan, buka detail kelas untuk mengisi surat & nilai hafalan.
+      </div>
+    </div>
+
+    <!-- Tab: Import / Export Global -->
+    <div class="tab-panel hidden" id="tab-importexport">
+      <div class="section-title" style="font-size:0.92rem;">Export Data</div>
+      <div class="info-box blue">
+        <strong>Export Excel</strong> akan mengunduh <b>semua siswa</b> dari semua kelas beserta nilai hafalannya.
+      </div>
+      <div class="toolbar">
+        <button class="btn btn-success" onclick="exportExcel()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export ke Excel (.xlsx)
+        </button>
+        <button class="btn btn-secondary" onclick="downloadTemplate()">Download Template Import</button>
+      </div>
+
+      <div class="section-title" style="font-size:0.92rem;margin-top:26px;">Import Data dari Excel</div>
+      <div class="info-box amber">
+        Format kolom: <strong>Nama</strong>, <strong>Kelas</strong>, lalu kolom surat (An-Naba, dst). Baris pertama = header.<br>
+        💡 Untuk import ke kelas tertentu saja, gunakan tombol <b>Import Excel</b> di halaman kelas.
+      </div>
+      <input type="file" id="fileImport" accept=".xlsx,.xls" style="margin-bottom:14px;display:block;font-family:inherit;font-size:0.88rem;margin-left:auto;margin-right:auto;" />
+      <button class="btn btn-primary" onclick="importExcel()">Import Sekarang</button>
+      <div id="importStatus" style="margin-top:14px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL SISWA ===== -->
+<div class="modal-overlay" id="modalSiswa">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="modalSiswaTitle">Tambah Siswa</div>
+      <button class="modal-close" onclick="closeModal('modalSiswa')">&times;</button>
+    </div>
+    <div class="field">
+      <label>Nama Siswa</label>
+      <input type="text" id="siswaNama" placeholder="Nama lengkap" />
+    </div>
+    <div class="field">
+      <label>Kelas</label>
+      <select id="siswaKelas"></select>
+    </div>
+    <div class="field">
+      <label>Pilih Surat & Nilai (Juz 30)</label>
+      <div class="field-hint" style="margin-bottom:10px;">Centang surat yang sudah dihafal, lalu isi nilainya.</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center;">
+        <input type="text" class="search-input" id="searchSurat" placeholder="Cari surat..." oninput="filterSurat()" style="flex:1;min-width:160px;" />
+        <button class="btn btn-secondary btn-sm" type="button" onclick="pilihSemuaSurat(true)">Pilih Semua</button>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="pilihSemuaSurat(false)">Kosongkan</button>
+      </div>
+      <div class="surat-list" id="suratList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalSiswa')">Batal</button>
+      <button class="btn btn-primary" id="btnSimpanSiswa" onclick="simpanSiswa()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL IMPORT KELAS ===== -->
+<div class="modal-overlay" id="modalImportKelas">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        Import ke Kelas <span id="importKelasName" style="color:#000;"></span>
+      </div>
+      <button class="modal-close" onclick="closeModal('modalImportKelas')">&times;</button>
+    </div>
+
+    <div class="info-box blue">
+      <strong>📋 Format file Excel:</strong><br>
+      Kolom wajib: <strong>Nama</strong>, lalu kolom surat (An-Naba, An-Nazi'at, dst).<br>
+      Kolom <b>Kelas</b> akan diabaikan — semua siswa otomatis masuk ke kelas ini.
+    </div>
+
+    <div class="toolbar" style="margin-bottom:16px;">
+      <button class="btn btn-secondary btn-sm" onclick="downloadTemplateKelas()">
+        ⬇️ Download Template
+      </button>
+    </div>
+
+    <div class="field">
+      <label>Pilih File Excel (.xlsx / .xls)</label>
+      <input type="file" id="fileImportKelas" accept=".xlsx,.xls" />
+    </div>
+
+    <div id="importKelasStatus"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalImportKelas')">Batal</button>
+      <button class="btn btn-primary" onclick="importExcelKelas()">Import Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL EDIT KELAS ===== -->
+<div class="modal-overlay" id="modalEditKelas">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">Edit Nama Kelas</div>
+      <button class="modal-close" onclick="closeModal('modalEditKelas')">&times;</button>
+    </div>
+    <div class="field">
+      <label>Nama Kelas</label>
+      <input type="text" id="editKelasNama" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modalEditKelas')">Batal</button>
+      <button class="btn btn-primary" onclick="simpanEditKelas()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea" style="position:fixed;left:-9999px;top:0;"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let SURAT_LIST = [];
+let state = {
+  kelas: [],
+  siswaAll: [],
+  currentKelasId: null,
+  editSiswaId: null,
+  editKelasId: null
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function $(id) { return document.getElementById(id); }
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function showToast(msg, type = 'success') {
+  const t = $('toast');
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  t.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span><span>${escapeHtml(msg)}</span>`;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function openModal(id) { $(id).classList.add('active'); }
+function closeModal(id) { $(id).classList.remove('active'); }
+
+function recalcJumlahSiswa() {
+  state.kelas.forEach(k => {
+    k.jumlahSiswa = state.siswaAll.filter(s => s.kelasId === k.id).length;
+  });
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  try {
+    const r = await fetch('/api/state');
+    const data = await r.json();
+    SURAT_LIST = data.surat;
+    state.kelas = data.kelas;
+    state.siswaAll = data.siswa;
+    buildSuratList([]);
+    renderKelasGrid();
+  } catch (e) {
+    showToast('Gagal memuat data: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderKelasGrid(newKelasIds = []) {
+  recalcJumlahSiswa();
+  const grid = $('kelasGrid');
+  if (state.kelas.length === 0) {
+    grid.innerHTML = `
+      <div class="empty" style="grid-column:1/-1;">
+        Belum ada kelas. Klik tombol <strong>Pengaturan</strong> di kanan atas untuk menambahkan kelas.
+      </div>`;
+    return;
+  }
+  grid.innerHTML = state.kelas.map(k => `
+    <div class="kelas-card ${newKelasIds.includes(k.id) ? 'new' : ''}" data-id="${k.id}" onclick="openKelas('${k.id}')">
+      <span class="kelas-badge">${k.jumlahSiswa} siswa</span>
+      <div class="kelas-name">${escapeHtml(k.nama)}</div>
+      <div class="kelas-count">Klik untuk melihat detail</div>
+    </div>
+  `).join('');
+}
+
+function openKelas(kelasId) {
+  state.currentKelasId = kelasId;
+  $('page-dashboard').classList.add('hidden');
+  $('page-kelas').classList.remove('hidden');
+  $('searchSiswa').value = '';
+  renderKelasDetail();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function backToDashboard() {
+  state.currentKelasId = null;
+  $('page-kelas').classList.add('hidden');
+  $('page-dashboard').classList.remove('hidden');
+  renderKelasGrid();
+}
+
+// ============================================================
+// KELAS DETAIL
+// ============================================================
+function renderKelasDetail() {
+  updateKelasHeader();
+  renderSiswaKelas();
+}
+
+function updateKelasHeader() {
+  const k = state.kelas.find(x => x.id === state.currentKelasId);
+  if (!k) return;
+
+  const icon = $('kelasIcon');
+  icon.textContent = k.nama;
+  icon.style.fontSize = k.nama.length > 4 ? '0.9rem' : k.nama.length > 3 ? '1.05rem' : '1.3rem';
+
+  $('kelasDetailTitle').textContent = `Kelas ${k.nama}`;
+
+  const list = state.siswaAll.filter(s => s.kelasId === state.currentKelasId);
+  const suratSet = new Set();
+  let totalNilai = 0, countNilai = 0;
+  list.forEach(s => {
+    s.hafalan.forEach(h => {
+      suratSet.add(h.surat);
+      totalNilai += h.nilai;
+      countNilai++;
+    });
+  });
+  const avg = countNilai ? (totalNilai / countNilai).toFixed(1) : '-';
+  $('kelasDetailMeta').textContent =
+    `${list.length} siswa · ${suratSet.size} surat dihafal · Rata-rata ${avg}`;
+}
+
+function renderSiswaKelas() {
+  const tbody = $('tbodySiswa');
+  const search = ($('searchSiswa').value || '').toLowerCase();
+  let list = state.siswaAll.filter(s => s.kelasId === state.currentKelasId);
+  if (search) list = list.filter(s => s.nama.toLowerCase().includes(search));
+
+  if (list.length === 0) {
+    if (search) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">Tidak ada siswa cocok dengan "${escapeHtml(search)}"</td></tr>`;
+    } else {
+      tbody.innerHTML = `
+        <tr><td colspan="5" class="empty-state">
+          <div class="empty-icon">📚</div>
+          <div class="empty-title">Belum ada siswa</div>
+          <div class="empty-desc">Tambahkan siswa secara manual atau import dari Excel.</div>
+          <div class="empty-actions">
+            <button class="btn btn-primary btn-sm" onclick="openTambahSiswa()">+ Tambah Siswa</button>
+            <button class="btn btn-secondary btn-sm" onclick="openImportKelas()">Import Excel</button>
+          </div>
+        </td></tr>`;
+    }
+    return;
+  }
+
+  tbody.innerHTML = list.map((s, i) => {
+    const hafalanTeks = s.hafalan.length === 0
+      ? '<span style="color:#9ca3af;font-style:italic;">Belum ada hafalan</span>'
+      : s.hafalan.map(h => {
+          const cls = h.nilai >= 80 ? 'nilai-tinggi' : h.nilai >= 60 ? 'nilai-sedang' : 'nilai-rendah';
+          return `<span class="badge">${escapeHtml(h.surat)} <span class="nilai ${cls}" style="margin-left:2px;">${h.nilai}</span></span>`;
+        }).join('');
+    const rata = s.hafalan.length
+      ? (s.hafalan.reduce((a, b) => a + b.nilai, 0) / s.hafalan.length).toFixed(1)
+      : '-';
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong>${escapeHtml(s.nama)}</strong></td>
+        <td>${hafalanTeks}</td>
+        <td><strong>${rata}</strong></td>
+        <td>
+          <div style="display:flex;gap:6px;justify-content:center;">
+            <button class="btn btn-warning btn-sm" onclick="openEditSiswa('${s.id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="hapusSiswa('${s.id}')">Hapus</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// IMPORT / EXPORT PER KELAS
+// ============================================================
+function openImportKelas() {
+  const k = state.kelas.find(x => x.id === state.currentKelasId);
+  if (!k) return;
+  $('importKelasName').textContent = k.nama;
+  $('fileImportKelas').value = '';
+  $('importKelasStatus').innerHTML = '';
+  openModal('modalImportKelas');
+}
+
+async function downloadTemplateKelas() {
+  try {
+    const r = await fetch('/api/template/excel?kelasId=' + encodeURIComponent(state.currentKelasId));
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template-import.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    showToast('Gagal download template', 'error');
+  }
+}
+
+function importExcelKelas() {
+  const file = $('fileImportKelas').files[0];
+  const statusEl = $('importKelasStatus');
+  if (!file) { showToast('Pilih file dulu', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    statusEl.innerHTML = '<div class="info-box blue">⏳ Memproses import...</div>';
+    try {
+      const r = await fetch('/api/import/excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: e.target.result, kelasId: state.currentKelasId })
+      });
+      const res = await r.json();
+      if (!r.ok) throw new Error(res.error || 'Gagal import');
+
+      if (res.importedSiswa === 0 && res.updatedSiswa === 0) {
+        statusEl.innerHTML = '<div class="info-box amber">⚠️ Tidak ada data baru yang diimport. Periksa format file.</div>';
+        return;
+      }
+
+      let msg = '✅ Import berhasil:';
+      if (res.importedSiswa > 0) msg += ` ${res.importedSiswa} siswa baru`;
+      if (res.updatedSiswa > 0) msg += (res.importedSiswa > 0 ? ', ' : ' ') + `${res.updatedSiswa} siswa diperbarui`;
+      statusEl.innerHTML = `<div class="info-box green">${msg}</div>`;
+      showToast('Import berhasil');
+      $('fileImportKelas').value = '';
+
+      const r2 = await fetch('/api/state');
+      const data = await r2.json();
+      state.kelas = data.kelas;
+      state.siswaAll = data.siswa;
+      renderKelasGrid();
+      renderKelasDetail();
+
+      setTimeout(() => closeModal('modalImportKelas'), 1400);
+    } catch (err) {
+      statusEl.innerHTML = `<div class="info-box red">❌ ${escapeHtml(err.message)}</div>`;
+      showToast('Import gagal', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function exportKelasExcel() {
+  const k = state.kelas.find(x => x.id === state.currentKelasId);
+  if (!k) return;
+  const count = state.siswaAll.filter(s => s.kelasId === state.currentKelasId).length;
+  if (count === 0) { showToast('Belum ada siswa untuk diexport', 'error'); return; }
+
+  try {
+    const r = await fetch('/api/export/excel?kelasId=' + encodeURIComponent(state.currentKelasId));
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const cd = r.headers.get('Content-Disposition') || '';
+    let filename = `hafalan-kelas-${Date.now()}.xlsx`;
+    const m = cd.match(/filename="([^"]+)"/);
+    if (m) filename = m[1];
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Excel berhasil diunduh');
+  } catch {
+    showToast('Gagal export', 'error');
+  }
+}
+
+// ============================================================
+// MODAL SISWA
+// ============================================================
+function buildSuratList(selected = []) {
+  const list = $('suratList');
+  const selMap = {};
+  selected.forEach(h => { selMap[h.surat] = h.nilai; });
+  list.innerHTML = SURAT_LIST.map(sr => {
+    const aktif = selMap[sr] !== undefined;
+    const nilai = aktif ? selMap[sr] : '';
+    return `
+      <div class="surat-item ${aktif ? 'active' : ''}" data-surat="${escapeHtml(sr)}">
+        <input type="checkbox" ${aktif ? 'checked' : ''} onchange="toggleSurat(this)" />
+        <span class="surat-name" onclick="this.previousElementSibling.click()">${escapeHtml(sr)}</span>
+        <input type="number" min="0" max="100" placeholder="0" value="${nilai}" ${aktif ? '' : 'disabled'} onchange="onNilaiChange(this)" />
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleSurat(checkbox) {
+  const item = checkbox.closest('.surat-item');
+  const nilaiInput = item.querySelector('input[type="number"]');
+  if (checkbox.checked) {
+    item.classList.add('active');
+    nilaiInput.disabled = false;
+    if (!nilaiInput.value) nilaiInput.value = '';
+    nilaiInput.focus();
+  } else {
+    item.classList.remove('active');
+    nilaiInput.disabled = true;
+    nilaiInput.value = '';
+  }
+}
+
+function onNilaiChange(input) {
+  let v = parseInt(input.value);
+  if (isNaN(v)) { input.value = ''; return; }
+  if (v < 0) v = 0;
+  if (v > 100) v = 100;
+  input.value = v;
+}
+
+function filterSurat() {
+  const q = ($('searchSurat').value || '').toLowerCase();
+  document.querySelectorAll('.surat-item').forEach(el => {
+    el.style.display = el.dataset.surat.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function pilihSemuaSurat(checked) {
+  document.querySelectorAll('.surat-item').forEach(el => {
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (cb.checked !== checked) { cb.checked = checked; toggleSurat(cb); }
+  });
+}
+
+function openTambahSiswa() {
+  if (state.kelas.length === 0) {
+    showToast('Belum ada kelas. Tambah kelas dulu.', 'error');
+    return;
+  }
+  state.editSiswaId = null;
+  $('modalSiswaTitle').textContent = 'Tambah Siswa';
+  $('siswaNama').value = '';
+  fillKelasSelect($('siswaKelas'), state.currentKelasId);
+  $('searchSurat').value = '';
+  buildSuratList([]);
+  openModal('modalSiswa');
+  setTimeout(() => $('siswaNama').focus(), 100);
+}
+
+function openEditSiswa(siswaId) {
+  const s = state.siswaAll.find(x => x.id === siswaId);
+  if (!s) return;
+  state.editSiswaId = siswaId;
+  $('modalSiswaTitle').textContent = 'Edit Siswa';
+  $('siswaNama').value = s.nama;
+  fillKelasSelect($('siswaKelas'), s.kelasId);
+  $('searchSurat').value = '';
+  buildSuratList(s.hafalan);
+  openModal('modalSiswa');
+}
+
+function fillKelasSelect(selectEl, selectedId) {
+  selectEl.innerHTML = state.kelas.map(k =>
+    `<option value="${k.id}" ${k.id === selectedId ? 'selected' : ''}>${escapeHtml(k.nama)}</option>`
+  ).join('');
+}
+
+async function simpanSiswa() {
+  const nama = $('siswaNama').value.trim();
+  const kelasId = $('siswaKelas').value;
+  if (!nama) { showToast('Nama wajib diisi', 'error'); return; }
+  if (!kelasId) { showToast('Pilih kelas', 'error'); return; }
+
+  const hafalan = [];
+  document.querySelectorAll('.surat-item').forEach(el => {
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (cb.checked) {
+      const surat = el.dataset.surat;
+      const nilai = parseInt(el.querySelector('input[type="number"]').value);
+      hafalan.push({ surat, nilai: isNaN(nilai) ? 0 : nilai });
+    }
+  });
+
+  const btn = $('btnSimpanSiswa');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Menyimpan...';
+
+  try {
+    const payload = { nama, kelasId, hafalan };
+    let url = '/api/siswa';
+    let method = 'POST';
+    if (state.editSiswaId) { url += '/' + state.editSiswaId; method = 'PUT'; }
+
+    const r = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error || 'Gagal simpan');
+    }
+    const saved = await r.json();
+
+    if (state.editSiswaId) {
+      const idx = state.siswaAll.findIndex(s => s.id === state.editSiswaId);
+      if (idx !== -1) state.siswaAll[idx] = saved;
+      showToast('Data diperbarui');
+    } else {
+      state.siswaAll.push(saved);
+      showToast('Siswa ditambahkan');
+    }
+
+    closeModal('modalSiswa');
+
+    if (state.currentKelasId) renderKelasDetail();
+    renderKelasGrid();
+    renderSettingKelas();
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+
+async function hapusSiswa(id) {
+  if (!confirm('Yakin hapus siswa ini?')) return;
+  try {
+    const r = await fetch('/api/siswa/' + id, { method: 'DELETE' });
+    if (!r.ok) throw new Error();
+    state.siswaAll = state.siswaAll.filter(s => s.id !== id);
+    showToast('Siswa dihapus');
+    renderKelasDetail();
+    renderKelasGrid();
+    renderSettingKelas();
+  } catch {
+    showToast('Gagal hapus', 'error');
+  }
+}
+
+// ============================================================
+// PENGATURAN
+// ============================================================
+function openSettings() {
+  renderSettingKelas();
+  renderSettingSiswaSelect();
+  $('inputKelasBanyak').value = '';
+  $('settingSiswaNama').value = '';
+  $('importStatus').innerHTML = '';
+  $('fileImport').value = '';
+  switchTab('kelas');
+  openModal('modalSettings');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  $('tab-' + tab).classList.remove('hidden');
+}
+
+function renderSettingKelas() {
+  recalcJumlahSiswa();
+  const tbody = $('tbodyKelasSetting');
+  if (state.kelas.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="empty">Belum ada kelas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.kelas.map((k, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong>${escapeHtml(k.nama)}</strong></td>
+      <td>${k.jumlahSiswa} siswa</td>
+      <td>
+        <div style="display:flex;gap:6px;justify-content:center;">
+          <button class="btn btn-warning btn-sm" onclick="openEditKelas('${k.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="hapusKelas('${k.id}')">Hapus</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function tambahKelasBanyak() {
+  const raw = $('inputKelasBanyak').value;
+  const list = raw.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+  if (list.length === 0) { showToast('Masukkan nama kelas', 'error'); return; }
+
+  try {
+    const r = await fetch('/api/kelas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama: list })
+    });
+    const res = await r.json();
+
+    const addedIds = [];
+    if (res.added && res.added.length) {
+      res.added.forEach(k => {
+        if (!state.kelas.some(x => x.id === k.id)) {
+          state.kelas.push({ id: k.id, nama: k.nama, jumlahSiswa: 0, createdAt: k.createdAt });
+          addedIds.push(k.id);
+        }
+      });
+    }
+
+    const addedCount = addedIds.length;
+    const skippedCount = res.skipped ? res.skipped.length : 0;
+    let msg = `${addedCount} kelas ditambahkan`;
+    if (skippedCount > 0) msg += `, ${skippedCount} dilewati (sudah ada)`;
+    showToast(msg, addedCount > 0 ? 'success' : 'info');
+
+    $('inputKelasBanyak').value = '';
+    renderSettingKelas();
+    renderKelasGrid(addedIds);
+    renderSettingSiswaSelect();
+  } catch {
+    showToast('Gagal tambah kelas', 'error');
+  }
+}
+
+function openEditKelas(id) {
+  const k = state.kelas.find(x => x.id === id);
+  if (!k) return;
+  state.editKelasId = id;
+  $('editKelasNama').value = k.nama;
+  openModal('modalEditKelas');
+  setTimeout(() => $('editKelasNama').focus(), 100);
+}
+
+async function simpanEditKelas() {
+  const nama = $('editKelasNama').value.trim();
+  if (!nama) { showToast('Nama wajib', 'error'); return; }
+  try {
+    const r = await fetch('/api/kelas/' + state.editKelasId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama })
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error);
+    }
+    const saved = await r.json();
+
+    const idx = state.kelas.findIndex(k => k.id === state.editKelasId);
+    if (idx !== -1) state.kelas[idx].nama = saved.nama;
+
+    showToast('Kelas diperbarui');
+    closeModal('modalEditKelas');
+    renderSettingKelas();
+    renderKelasGrid();
+    renderSettingSiswaSelect();
+
+    if (state.currentKelasId === state.editKelasId) {
+      updateKelasHeader();
+    }
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function hapusKelas(id) {
+  if (!confirm('Yakin hapus kelas ini?')) return;
+  try {
+    const r = await fetch('/api/kelas/' + id, { method: 'DELETE' });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.error);
+    }
+    state.kelas = state.kelas.filter(k => k.id !== id);
+    showToast('Kelas dihapus');
+    renderSettingKelas();
+    renderKelasGrid();
+    renderSettingSiswaSelect();
+
+    if (state.currentKelasId === id) backToDashboard();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function renderSettingSiswaSelect() {
+  const sel = $('settingSiswaKelas');
+  if (state.kelas.length === 0) {
+    sel.innerHTML = '<option value="">- Belum ada kelas -</option>';
+    $('settingSiswaKelasHint').textContent = 'Tambahkan kelas dulu di tab Kelola Kelas.';
+    return;
+  }
+  sel.innerHTML = state.kelas.map(k =>
+    `<option value="${k.id}">${escapeHtml(k.nama)}</option>`
+  ).join('');
+  $('settingSiswaKelasHint').textContent = 'Pilih kelas tujuan.';
+}
+
+async function tambahSiswaFromSetting() {
+  const kelasId = $('settingSiswaKelas').value;
+  const nama = $('settingSiswaNama').value.trim();
+  if (state.kelas.length === 0) { showToast('Belum ada kelas. Tambah kelas dulu.', 'error'); return; }
+  if (!kelasId) { showToast('Pilih kelas', 'error'); return; }
+  if (!nama) { showToast('Nama wajib', 'error'); return; }
+
+  try {
+    const r = await fetch('/api/siswa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama, kelasId, hafalan: [] })
+    });
+    if (!r.ok) throw new Error('Gagal');
+    const saved = await r.json();
+    state.siswaAll.push(saved);
+    showToast('Siswa ditambahkan. Buka detail kelas untuk isi hafalan.');
+    $('settingSiswaNama').value = '';
+    renderSettingKelas();
+    renderKelasGrid();
+    if (state.currentKelasId === kelasId) renderKelasDetail();
+  } catch {
+    showToast('Gagal tambah siswa', 'error');
+  }
+}
+
+// ============================================================
+// IMPORT / EXPORT GLOBAL
+// ============================================================
+async function exportExcel() {
+  try {
+    const r = await fetch('/api/export/excel');
+    if (!r.ok) throw new Error();
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `hafalan-semua-${Date.now()}.xlsx`; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Excel berhasil diunduh');
+  } catch { showToast('Gagal export', 'error'); }
+}
+
+async function downloadTemplate() {
+  try {
+    const r = await fetch('/api/template/excel');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'template-import-hafalan.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+  } catch { showToast('Gagal download template', 'error'); }
+}
+
+function importExcel() {
+  const file = $('fileImport').files[0];
+  const statusEl = $('importStatus');
+  if (!file) { showToast('Pilih file dulu', 'error'); return; }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    statusEl.innerHTML = '<div class="info-box blue">⏳ Memproses import...</div>';
+    try {
+      const r = await fetch('/api/import/excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ file: e.target.result })
+      });
+      const res = await r.json();
+      if (!r.ok) throw new Error(res.error || 'Gagal');
+
+      let msg = '✅ Import berhasil:';
+      const parts = [];
+      if (res.importedSiswa > 0) parts.push(`${res.importedSiswa} siswa baru`);
+      if (res.updatedSiswa > 0) parts.push(`${res.updatedSiswa} diperbarui`);
+      if (res.importedKelas > 0) parts.push(`${res.importedKelas} kelas baru`);
+      if (parts.length === 0) parts.push('tidak ada data baru');
+      msg += ' ' + parts.join(', ') + '.';
+
+      statusEl.innerHTML = `<div class="info-box green">${msg}</div>`;
+      showToast('Import berhasil');
+      $('fileImport').value = '';
+
+      const r2 = await fetch('/api/state');
+      const data = await r2.json();
+      state.kelas = data.kelas;
+      state.siswaAll = data.siswa;
+      renderSettingKelas();
+      renderSettingSiswaSelect();
+      renderKelasGrid();
+      if (state.currentKelasId) renderKelasDetail();
+    } catch (err) {
+      statusEl.innerHTML = `<div class="info-box red">❌ ${escapeHtml(err.message)}</div>`;
+      showToast('Import gagal', 'error');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// PDF / PNG — TEMA GELAP (PUTIH DI HITAM)
+// ============================================================
+function buildPrintKelas() {
+  const kelas = state.kelas.find(k => k.id === state.currentKelasId);
+  const list = state.siswaAll.filter(s => s.kelasId === state.currentKelasId);
+  const now = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+  const usedSurat = new Set();
+  list.forEach(s => s.hafalan.forEach(h => usedSurat.add(h.surat)));
+  const suratCols = SURAT_LIST.filter(sr => usedSurat.has(sr));
+
+  const rows = list.map((s, i) => {
+    const map = {};
+    s.hafalan.forEach(h => { map[h.surat] = h.nilai; });
+    const rata = s.hafalan.length
+      ? (s.hafalan.reduce((a,b)=>a+b.nilai,0) / s.hafalan.length).toFixed(1)
+      : '-';
+    return `
+      <tr>
+        <td style="padding:7px;border:1px solid #ffffff;text-align:center;color:#ffffff;">${i+1}</td>
+        <td style="padding:7px;border:1px solid #ffffff;text-align:center;color:#ffffff;">${escapeHtml(s.nama)}</td>
+        ${suratCols.map(sr => `<td style="padding:7px;border:1px solid #ffffff;text-align:center;color:#ffffff;">${map[sr] !== undefined ? map[sr] : '-'}</td>`).join('')}
+        <td style="padding:7px;border:1px solid #ffffff;text-align:center;font-weight:bold;color:#ffffff;">${rata}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <div style="font-family:Arial,sans-serif;padding:24px;background:#000000;color:#ffffff;width:${Math.max(800, 260 + suratCols.length * 60)}px;">
+      <div style="text-align:center;margin-bottom:18px;">
+        <h1 style="margin:0;font-size:20px;color:#ffffff;">Data Hafalan Siswa</h1>
+        <p style="margin:4px 0;font-size:14px;font-weight:600;color:#ffffff;">Kelas ${escapeHtml(kelas ? kelas.nama : '-')}</p>
+        <p style="margin:4px 0;font-size:12px;color:#d1d5db;">Dicetak: ${now}</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:#ffffff;">
+        <thead>
+          <tr style="background:#1f2937;color:#ffffff;">
+            <th style="padding:8px;border:1px solid #ffffff;width:35px;color:#ffffff;">No</th>
+            <th style="padding:8px;border:1px solid #ffffff;text-align:center;color:#ffffff;">Nama Siswa</th>
+            ${suratCols.map(sr => `<th style="padding:8px;border:1px solid #ffffff;font-size:10px;color:#ffffff;">${escapeHtml(sr)}</th>`).join('')}
+            <th style="padding:8px;border:1px solid #ffffff;width:60px;color:#ffffff;">Rata</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows || `<tr><td colspan="${suratCols.length + 3}" style="padding:20px;text-align:center;border:1px solid #ffffff;color:#ffffff;">Tidak ada data</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+async function downloadPNGKelas() {
+  const list = state.siswaAll.filter(s => s.kelasId === state.currentKelasId);
+  if (list.length === 0) { showToast('Tidak ada siswa', 'error'); return; }
+  const area = $('printArea');
+  area.innerHTML = buildPrintKelas();
+  const el = area.firstElementChild;
+  try {
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#000000' });
+    const link = document.createElement('a');
+    link.download = `hafalan-kelas-${Date.now()}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('Gambar berhasil diunduh');
+  } catch { showToast('Gagal membuat gambar', 'error'); }
+  finally { area.innerHTML = ''; }
+}
+
+async function downloadPDFKelas() {
+  const list = state.siswaAll.filter(s => s.kelasId === state.currentKelasId);
+  if (list.length === 0) { showToast('Tidak ada siswa', 'error'); return; }
+  const area = $('printArea');
+  area.innerHTML = buildPrintKelas();
+  const el = area.firstElementChild;
+  try {
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#000000' });
+    const img = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgW = pageW - 16;
+    const imgH = (canvas.height * imgW) / canvas.width;
+
+    // Background halaman PDF diisi hitam dulu
+    if (imgH <= pageH - 16) {
+      pdf.setFillColor(0, 0, 0);
+      pdf.rect(0, 0, pageW, pageH, 'F');
+      pdf.addImage(img, 'PNG', 8, 8, imgW, imgH);
+    } else {
+      let pageCanvas = canvas;
+      let remaining = imgH;
+      const pageHeightPx = ((pageH - 16) * canvas.width) / imgW;
+      let first = true;
+      while (remaining > 0) {
+        const sliceH = Math.min(pageHeightPx, pageCanvas.height);
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = sliceH;
+        slice.getContext('2d').drawImage(pageCanvas, 0, 0, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const sliceData = slice.toDataURL('image/png');
+        const sliceHmm = (sliceH * imgW) / canvas.width;
+        if (!first) pdf.addPage();
+        pdf.setFillColor(0, 0, 0);
+        pdf.rect(0, 0, pageW, pageH, 'F');
+        pdf.addImage(sliceData, 'PNG', 8, 8, imgW, sliceHmm);
+        first = false;
+        remaining -= sliceH;
+        if (remaining > 0) {
+          const newCanvas = document.createElement('canvas');
+          newCanvas.width = canvas.width;
+          newCanvas.height = pageCanvas.height - sliceH;
+          newCanvas.getContext('2d').drawImage(pageCanvas, 0, sliceH, canvas.width, pageCanvas.height - sliceH, 0, 0, canvas.width, pageCanvas.height - sliceH);
+          pageCanvas = newCanvas;
+        }
+      }
+    }
+    pdf.save(`hafalan-kelas-${Date.now()}.pdf`);
+    showToast('PDF berhasil diunduh');
+  } catch (e) {
+    console.error(e);
+    showToast('Gagal membuat PDF', 'error');
+  } finally { area.innerHTML = ''; }
+}
+
+// ============================================================
+// EVENT: klik overlay untuk tutup
+// ============================================================
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+          </html>
